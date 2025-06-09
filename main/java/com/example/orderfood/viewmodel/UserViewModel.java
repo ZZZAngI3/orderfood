@@ -2,6 +2,8 @@ package com.example.orderfood.viewmodel;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
@@ -66,17 +68,23 @@ public class UserViewModel extends AndroidViewModel {
     // 关键：从UserSession恢复用户
     public void restoreUserFromSession(Context context) {
         int userId = UserSession.getUserId(context);
+        Log.d("UserViewModel", "Restoring user with ID: " + userId);
         if (userId != -1) {
             userRepository.getUserById(userId, new UserRepository.GetUserCallback() {
                 @Override
                 public void onUserLoaded(User user) {
+                    Log.d("UserViewModel", "User loaded: " + user);
                     currentUser.postValue(user);
                 }
                 @Override
                 public void onDataNotAvailable() {
+                    Log.d("UserViewModel", "User data not available");
                     currentUser.postValue(null);
                 }
             });
+        } else {
+            Log.d("UserViewModel", "No user ID found in session");
+            currentUser.postValue(null);
         }
     }
 
