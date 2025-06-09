@@ -65,7 +65,11 @@ public class MainActivity extends AppCompatActivity {
                     if (itemId == R.id.nav_home) {
                         selectedFragment = new HomeFragment();
                     } else if (itemId == R.id.nav_category) {
+                        // 假设这里默认传递一个分类，你可以根据实际情况修改
                         selectedFragment = new CategoryFragment();
+                        Bundle args = new Bundle();
+                        args.putString("category", "川菜"); // 这里的分类名称可以根据实际情况修改
+                        selectedFragment.setArguments(args);
                     } else if (itemId == R.id.nav_cart) {
                         selectedFragment = new CartFragment();
                     } else if (itemId == R.id.nav_profile) {
