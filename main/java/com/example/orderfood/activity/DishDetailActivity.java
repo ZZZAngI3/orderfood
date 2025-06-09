@@ -31,6 +31,9 @@ public class DishDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dish_detail);
 
+        cartViewModel = new ViewModelProvider(this).get(CartViewModel.class);
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+
         initViews();
         setupViewModel();
         setupListeners();
@@ -98,14 +101,13 @@ public class DishDetailActivity extends AppCompatActivity {
         User user = userViewModel.getCurrentUser().getValue();
         if (user != null) {
             int userId = user.getId();
-            cartViewModel.initCart(userId);
+            cartViewModel.initCart(userId); // 确保CartViewModel有正确userId
             cartViewModel.addToCart(dish, quantity, new CartViewModel.AddToCartCallback() {
                 @Override
                 public void onSuccess() {
                     Toast.makeText(DishDetailActivity.this, "已添加到购物车", Toast.LENGTH_SHORT).show();
                     finish();
                 }
-
                 @Override
                 public void onFailure(String message) {
                     Toast.makeText(DishDetailActivity.this, message, Toast.LENGTH_SHORT).show();
