@@ -1,11 +1,13 @@
 package com.example.orderfood.viewmodel;
 
 import android.app.Application;
+import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 import com.example.orderfood.entity.User;
 import com.example.orderfood.repository.UserRepository;
+import com.example.orderfood.util.UserSession;
 
 public class UserViewModel extends AndroidViewModel {
     private UserRepository userRepository;
@@ -59,6 +61,23 @@ public class UserViewModel extends AndroidViewModel {
     // 添加 setCurrentUser 方法
     public void setCurrentUser(User user) {
         currentUser.setValue(user);
+    }
+
+    // 关键：从UserSession恢复用户
+    public void restoreUserFromSession(Context context) {
+        int userId = UserSession.getUserId(context);
+        if (userId != -1) {
+            userRepository.getUserById(userId, new UserRepository.GetUserCallback() {
+                @Override
+                public void onUserLoaded(User user) {
+                    currentUser.postValue(user);
+                }
+                @Override
+                public void onDataNotAvailable() {
+                    currentUser.postValue(null);
+                }
+            });
+        }
     }
 
     public interface LoginCallback {
