@@ -1,5 +1,6 @@
 package com.example.orderfood.fragment;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.orderfood.R;
 import com.example.orderfood.adapter.CartAdapter;
+import com.example.orderfood.database.AppDatabase;
+import com.example.orderfood.database.DishDao;
 import com.example.orderfood.entity.CartItem;
 import com.example.orderfood.entity.Dish;
 import com.example.orderfood.viewmodel.CartViewModel;
@@ -35,12 +38,14 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemList
     private CheckBox cbSelectAll;
     private Button btnCheckout;
     private int currentUserId = -1;
+    private DishDao dishDao;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_cart, container, false);
         initViews(view);
+        dishDao = AppDatabase.getInstance(requireContext()).dishDao();
         setupViewModels();
         setupRecyclerView();
         setupListeners();
@@ -100,7 +105,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemList
     private void checkArguments() {
         Bundle args = getArguments();
         if (args != null && args.containsKey("dish")) {
-            Dish dish = (Dish) args.getSerializable("dish");
+            CartItem dish = (CartItem) args.getSerializable("dish");
             if (dish != null) {
                 addDishToCart(dish);
             }
@@ -148,8 +153,18 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemList
         cbSelectAll.setChecked(allSelected);
     }
 
-    private void addDishToCart(Dish dish) {
-        cartViewModel.addToCart(dish, 1, new CartViewModel.AddToCartCallback() {
+    private void addDishToCart(CartItem dish) {
+        cartViewModel.addToCart(new Dish(
+                dish.getDishName(),
+                "", // description
+                dish.getDishPrice(),
+                "", // category
+                dish.getDishImageUrl(),
+                false,
+                0,
+                0,
+                dish.getStock()
+        ), 1, new CartViewModel.AddToCartCallback() {
             @Override
             public void onSuccess() {
                 Toast.makeText(requireContext(), "已添加到购物车", Toast.LENGTH_SHORT).show();
@@ -162,6 +177,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemList
         });
     }
 
+    // ========== 重点：修正这里 =============
     private void checkout() {
         List<CartItem> selectedItems = new ArrayList<>();
         if (cartViewModel.getCartItemsLiveData().getValue() != null) {
@@ -177,30 +193,44 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemList
             return;
         }
 
-        // 检查库存
-        boolean hasEnoughStock = true;
-        for (CartItem item : selectedItems) {
-            if (item.getCount() > item.getStock()) {
-                hasEnoughStock = false;
-                Toast.makeText(requireContext(), item.getDishName() + " 库存不足", Toast.LENGTH_SHORT).show();
-                break;
+        // 检查库存 - 用Dish表的最新库存
+        new AsyncTask<Void, Void, Boolean>() {
+            String outOfStockItem = null;
+            @Override
+            protected Boolean doInBackground(Void... voids) {
+                for (CartItem item : selectedItems) {
+                    Dish dish = dishDao.getDishById(item.getDishId());
+                    int stock = (dish != null) ? dish.getStock() : 0;
+                    if (item.getCount() > stock) {
+                        outOfStockItem = item.getDishName();
+                        return false;
+                    }
+                }
+                return true;
             }
-        }
 
-        if (hasEnoughStock) {
-            generateOrder(selectedItems);
-            updateStock(selectedItems);
-            cartViewModel.clearCart();
-            Toast.makeText(requireContext(), "结算成功", Toast.LENGTH_SHORT).show();
-        }
+            @Override
+            protected void onPostExecute(Boolean hasEnoughStock) {
+                if (!hasEnoughStock) {
+                    Toast.makeText(requireContext(), outOfStockItem + " 库存不足", Toast.LENGTH_SHORT).show();
+                } else {
+                    generateOrder(selectedItems);
+                    updateStock(selectedItems);
+                    cartViewModel.clearCart();
+                    Toast.makeText(requireContext(), "结算成功", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }.execute();
     }
 
+    // 订单生成逻辑
     private void generateOrder(List<CartItem> selectedItems) {
-        // 订单生成逻辑
+        // TODO: 你的订单生成代码
     }
 
+    // 更新库存逻辑
     private void updateStock(List<CartItem> selectedItems) {
-        // 更新库存逻辑
+        // TODO: 你的库存更新代码
     }
 
     @Override
