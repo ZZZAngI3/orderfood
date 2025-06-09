@@ -16,6 +16,7 @@ import com.example.orderfood.R;
 import com.example.orderfood.activity.LoginActivity;
 import com.example.orderfood.entity.User;
 import com.example.orderfood.viewmodel.UserViewModel;
+import com.example.orderfood.util.UserSession;
 
 public class ProfileFragment extends Fragment {
     private TextView tvUsername, tvPhone, tvAddress;
@@ -48,7 +49,6 @@ public class ProfileFragment extends Fragment {
                 if (user != null) {
                     updateUserInfo(user);
                 } else {
-                    // 用户未登录，跳转到登录页面
                     startActivity(new Intent(requireContext(), LoginActivity.class));
                     requireActivity().finish();
                 }
@@ -61,6 +61,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 userViewModel.logout();
+                UserSession.clear(requireContext());
                 startActivity(new Intent(requireContext(), LoginActivity.class));
                 requireActivity().finish();
             }
