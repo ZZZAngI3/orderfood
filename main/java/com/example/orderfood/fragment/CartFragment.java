@@ -1,8 +1,6 @@
 package com.example.orderfood.fragment;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,17 +13,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.SavedStateViewModelFactory;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.orderfood.R;
-import com.example.orderfood.activity.LoginActivity;
 import com.example.orderfood.adapter.CartAdapter;
 import com.example.orderfood.entity.CartItem;
 import com.example.orderfood.entity.Dish;
 import com.example.orderfood.viewmodel.CartViewModel;
 import com.example.orderfood.viewmodel.UserViewModel;
+import com.example.orderfood.util.UserSession;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,26 +57,17 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemList
     }
 
     private void setupViewModels() {
-        // 使用带 SavedStateHandle 的构造函数创建 CartViewModel
-        cartViewModel = new ViewModelProvider(this, new SavedStateViewModelFactory(requireActivity().getApplication(), this)).get(CartViewModel.class);
-        // 使用 requireActivity() 确保与 MainActivity 使用相同的 UserViewModel 实例
+        cartViewModel = new ViewModelProvider(requireActivity()).get(CartViewModel.class);
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
-        Log.d("CartFragment", "UserViewModel created: " + userViewModel);
-        Log.d("CartFragment", "CartViewModel created: " + cartViewModel);
-        userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), user -> {
-            Log.d("CartFragment", "Current user: " + user);
-            if (user != null) {
-                currentUserId = user.getId();
-                Log.d("CartFragment", "Current user ID: " + currentUserId);
-                cartViewModel.initCart(currentUserId);
-                observeCartItems();
-            } else {
-                // 用户未登录，跳转到登录页面
-                Toast.makeText(requireContext(), "请先登录", Toast.LENGTH_SHORT).show();
-                // 这里应该跳转到登录页面，简化起见不实现
-            }
-        });
+        int userId = UserSession.getUserId(requireContext());
+        if (userId != -1) {
+            currentUserId = userId;
+            cartViewModel.initCart(currentUserId);
+            observeCartItems();
+        } else {
+            Toast.makeText(requireContext(), "请先登录", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupRecyclerView() {
@@ -192,7 +180,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemList
         // 检查库存
         boolean hasEnoughStock = true;
         for (CartItem item : selectedItems) {
-            // 假设 Dish 类中有 stock 属性表示库存
             if (item.getCount() > item.getStock()) {
                 hasEnoughStock = false;
                 Toast.makeText(requireContext(), item.getDishName() + " 库存不足", Toast.LENGTH_SHORT).show();
@@ -201,27 +188,19 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemList
         }
 
         if (hasEnoughStock) {
-            // 生成订单
             generateOrder(selectedItems);
-
-            // 更新库存
             updateStock(selectedItems);
-
-            // 清空购物车
             cartViewModel.clearCart();
-
             Toast.makeText(requireContext(), "结算成功", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void generateOrder(List<CartItem> selectedItems) {
-        // 这里可以实现生成订单的逻辑，例如将订单信息保存到数据库
-        // 简化起见，暂时不实现具体逻辑
+        // 订单生成逻辑
     }
 
     private void updateStock(List<CartItem> selectedItems) {
-        // 这里可以实现更新库存的逻辑，例如更新 Dish 表中的 stock 字段
-        // 简化起见，暂时不实现具体逻辑
+        // 更新库存逻辑
     }
 
     @Override
