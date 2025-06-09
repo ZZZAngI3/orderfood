@@ -1,5 +1,6 @@
 package com.example.orderfood.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,11 +14,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.orderfood.R;
+import com.example.orderfood.activity.DishDetailActivity;
 import com.example.orderfood.adapter.CategoryAdapter;
 import com.example.orderfood.adapter.DishAdapter;
 import com.example.orderfood.entity.Dish;
 import com.example.orderfood.viewmodel.DishViewModel;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -42,21 +43,23 @@ public class CategoryFragment extends Fragment implements DishAdapter.OnDishClic
         rvDishes = view.findViewById(R.id.rv_dishes);
         tvCategoryName = view.findViewById(R.id.tv_category_name);
 
+        // 初始化菜品列表
         dishAdapter = new DishAdapter(requireContext(), new ArrayList<>(), this);
         rvDishes.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvDishes.setAdapter(dishAdapter);
 
+        // 初始化分类标签
         rvCategoryTabs.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         categoryAdapter = new CategoryAdapter(requireContext(), categoryList, (category, position) -> {
             currentCategory = category;
             tvCategoryName.setText(category);
             loadDishesByCategory(category);
+            categoryAdapter.setSelectedPosition(position);
         });
         rvCategoryTabs.setAdapter(categoryAdapter);
 
+        // 获取所有菜品的分类
         dishViewModel = new ViewModelProvider(requireActivity()).get(DishViewModel.class);
-
-        // 获取所有菜品，提取分类
         dishViewModel.getAllDishes().observe(getViewLifecycleOwner(), new Observer<List<Dish>>() {
             @Override
             public void onChanged(List<Dish> dishes) {
@@ -83,9 +86,7 @@ public class CategoryFragment extends Fragment implements DishAdapter.OnDishClic
         return view;
     }
 
-    /**
-     * 加载某分类下的菜品
-     */
+    /** 加载某分类下的菜品 */
     private void loadDishesByCategory(String category) {
         dishViewModel.getDishesByCategory(category).observe(getViewLifecycleOwner(), new Observer<List<Dish>>() {
             @Override
@@ -95,13 +96,17 @@ public class CategoryFragment extends Fragment implements DishAdapter.OnDishClic
         });
     }
 
+    /** 点击菜品，跳转到详情 */
     @Override
     public void onDishClick(Dish dish) {
-        // 可跳转到详情
+        Intent intent = new Intent(requireContext(), DishDetailActivity.class);
+        intent.putExtra("dish", dish);
+        startActivity(intent);
     }
 
+    /** 点击加购物车（可选实现） */
     @Override
     public void onAddToCartClick(Dish dish) {
-        // 可添加到购物车
+        // 可实现弹窗、或跳转购物车等
     }
 }
