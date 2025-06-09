@@ -50,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onSuccess(User user) {
                 Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
                 UserSession.saveUserId(LoginActivity.this, user.getId());
+                userViewModel.setCurrentUser(user); // 关键：同步currentUser
                 CartViewModel cartViewModel = new ViewModelProvider(LoginActivity.this).get(CartViewModel.class);
                 cartViewModel.initCart(user.getId());
                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
