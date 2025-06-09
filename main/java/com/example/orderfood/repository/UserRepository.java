@@ -32,6 +32,30 @@ public class UserRepository {
         return currentUser;
     }
 
+    // 新增：通过 userId 获取用户
+    public interface GetUserCallback {
+        void onUserLoaded(User user);
+        void onDataNotAvailable();
+    }
+
+    public void getUserById(int userId, GetUserCallback callback) {
+        new AsyncTask<Integer, Void, User>() {
+            @Override
+            protected User doInBackground(Integer... params) {
+                return userDao.getUserById(params[0]);
+            }
+
+            @Override
+            protected void onPostExecute(User user) {
+                if (user != null) {
+                    callback.onUserLoaded(user);
+                } else {
+                    callback.onDataNotAvailable();
+                }
+            }
+        }.execute(userId);
+    }
+
     public interface LoginCallback {
         void onSuccess(User user);
         void onFailure(String message);
@@ -97,7 +121,6 @@ public class UserRepository {
                 if (existingUser != null) {
                     return false;
                 }
-                // 修改这里，调用 register 方法
                 repository.userDao.register(user);
                 return true;
             }
