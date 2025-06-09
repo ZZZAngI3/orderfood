@@ -53,20 +53,12 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onChanged(User user) {
                 if (user != null) {
-                    // 已登录，显示信息与退出按钮，隐藏登录按钮
+                    // 已登录
                     updateUserInfo(user);
-                    btnLogout.setVisibility(View.VISIBLE);
-                    btnLogin.setVisibility(View.GONE);
-                    tvUsername.setVisibility(View.VISIBLE);
-                    tvPhone.setVisibility(View.VISIBLE);
-                    tvAddress.setVisibility(View.VISIBLE);
+                    setLoginUI(false);
                 } else {
-                    // 未登录，隐藏信息与退出按钮，显示登录按钮
-                    tvUsername.setVisibility(View.GONE);
-                    tvPhone.setVisibility(View.GONE);
-                    tvAddress.setVisibility(View.GONE);
-                    btnLogout.setVisibility(View.GONE);
-                    btnLogin.setVisibility(View.VISIBLE);
+                    // 未登录
+                    setLoginUI(true);
                 }
             }
         });
@@ -78,7 +70,6 @@ public class ProfileFragment extends Fragment {
             public void onClick(View v) {
                 userViewModel.logout();
                 UserSession.clear(requireContext());
-                // 触发 observer，自动切换为未登录UI
             }
         });
 
@@ -95,5 +86,25 @@ public class ProfileFragment extends Fragment {
         tvUsername.setText(user.getUsername());
         tvPhone.setText(user.getPhone());
         tvAddress.setText(user.getAddress());
+    }
+
+    /**
+     * 控制登录/未登录时UI显示
+     * @param isNotLoggedIn 是否未登录
+     */
+    private void setLoginUI(boolean isNotLoggedIn) {
+        if (isNotLoggedIn) {
+            btnLogin.setVisibility(View.VISIBLE);
+            btnLogout.setVisibility(View.GONE);
+            tvUsername.setVisibility(View.GONE);
+            tvPhone.setVisibility(View.GONE);
+            tvAddress.setVisibility(View.GONE);
+        } else {
+            btnLogin.setVisibility(View.GONE);
+            btnLogout.setVisibility(View.VISIBLE);
+            tvUsername.setVisibility(View.VISIBLE);
+            tvPhone.setVisibility(View.VISIBLE);
+            tvAddress.setVisibility(View.VISIBLE);
+        }
     }
 }
