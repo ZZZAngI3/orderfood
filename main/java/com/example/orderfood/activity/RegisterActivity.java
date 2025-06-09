@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import android.os.Bundle;
 import android.widget.Button;
+
+import com.example.orderfood.util.UserSession;
 import com.google.android.material.textfield.TextInputEditText;
 import android.widget.Toast;
 import com.example.orderfood.R;
@@ -49,6 +51,8 @@ public class RegisterActivity extends AppCompatActivity {
         userViewModel.register(username, password, phone, "", new UserViewModel.RegisterCallback() {
             @Override
             public void onSuccess() {
+                // 修正：注册成功清除 session
+                UserSession.clear(RegisterActivity.this);
                 Toast.makeText(RegisterActivity.this, "注册成功，请登录", Toast.LENGTH_SHORT).show();
                 finish();
             }
