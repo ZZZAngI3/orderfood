@@ -10,6 +10,8 @@ public class OrderFoodApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        // 清除登录session
+        UserSession.clear(this);
         DishViewModel dishViewModel = new DishViewModel(this);
         List<Dish> dishes = createMockDishes();
         dishViewModel.insertDishes(dishes);
