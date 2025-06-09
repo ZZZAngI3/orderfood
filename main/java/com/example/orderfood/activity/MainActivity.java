@@ -15,6 +15,7 @@ import com.example.orderfood.fragment.ProfileFragment;
 import com.example.orderfood.viewmodel.UserViewModel;
 import com.example.orderfood.viewmodel.CartViewModel;
 import com.example.orderfood.entity.User;
+import com.example.orderfood.util.UserSession;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,12 +31,12 @@ public class MainActivity extends AppCompatActivity {
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
         cartViewModel = new ViewModelProvider(this).get(CartViewModel.class);
 
-        // 检查用户是否已登录，同时同步cartViewModel的userId
         userViewModel.getCurrentUser().observe(this, user -> {
             if (user == null) {
                 startActivity(new Intent(MainActivity.this, LoginActivity.class));
                 finish();
             } else {
+                UserSession.saveUserId(MainActivity.this, user.getId());
                 cartViewModel.initCart(user.getId());
             }
         });
@@ -53,10 +54,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // 每次回到主界面再同步一次，防止账号切换等问题
-        User user = userViewModel.getCurrentUser().getValue();
-        if (user != null) {
-            cartViewModel.initCart(user.getId());
+        int userId = UserSession.getUserId(this);
+        if (userId != -1) {
+            cartViewModel.initCart(userId);
         }
     }
 
