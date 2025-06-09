@@ -30,23 +30,19 @@ public class MainActivity extends AppCompatActivity {
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
         cartViewModel = new ViewModelProvider(this).get(CartViewModel.class);
 
-        // 检查用户是否已登录
+        // 检查用户是否已登录，同时同步cartViewModel的userId
         userViewModel.getCurrentUser().observe(this, user -> {
             if (user == null) {
-                // 用户未登录，跳转到登录页面
                 startActivity(new Intent(MainActivity.this, LoginActivity.class));
                 finish();
             } else {
-                // 用户已登录，初始化购物车用户ID
                 cartViewModel.initCart(user.getId());
             }
         });
 
-        // 修复：使用正确的资源ID (R.id.bottom_navigation)
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(navListener);
 
-        // 默认显示首页
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new HomeFragment())
@@ -57,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // 每次回到主界面再同步一次，避免账号切换等情况
+        // 每次回到主界面再同步一次，防止账号切换等问题
         User user = userViewModel.getCurrentUser().getValue();
         if (user != null) {
             cartViewModel.initCart(user.getId());
@@ -69,8 +65,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                     Fragment selectedFragment = null;
-
-                    // 修复：将switch-case替换为if-else以避免常量表达式错误
                     int itemId = item.getItemId();
                     if (itemId == R.id.nav_home) {
                         selectedFragment = new HomeFragment();
@@ -81,14 +75,12 @@ public class MainActivity extends AppCompatActivity {
                     } else if (itemId == R.id.nav_profile) {
                         selectedFragment = new ProfileFragment();
                     }
-
                     if (selectedFragment != null) {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment_container, selectedFragment)
                                 .commit();
                         return true;
                     }
-
                     return false;
                 }
             };
