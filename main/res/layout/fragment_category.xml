@@ -5,6 +5,17 @@
     android:orientation="vertical"
     android:background="@color/white">
 
+    <!-- 分类标签 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_category_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:overScrollMode="never"
+        android:layout_marginBottom="4dp"
+        android:scrollbars="none" />
+
     <!-- 显示分类名称的 TextView -->
     <TextView
         android:id="@+id/tv_category_name"
