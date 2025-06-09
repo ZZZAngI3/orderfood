@@ -1,21 +1,18 @@
 package com.example.orderfood.activity;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
 import com.example.orderfood.R;
-import com.example.orderfood.entity.CartItem;
 import com.example.orderfood.entity.Dish;
-import com.example.orderfood.entity.User;
 import com.example.orderfood.viewmodel.CartViewModel;
 import com.example.orderfood.viewmodel.UserViewModel;
+import com.example.orderfood.util.UserSession;
 
 public class DishDetailActivity extends AppCompatActivity {
     private ImageView ivDishImage, ivMinus, ivPlus;
@@ -35,7 +32,6 @@ public class DishDetailActivity extends AppCompatActivity {
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
 
         initViews();
-        setupViewModel();
         setupListeners();
         getDishFromIntent();
         updateUI();
@@ -54,11 +50,6 @@ public class DishDetailActivity extends AppCompatActivity {
         tvDishDescription = findViewById(R.id.tv_dish_description);
         tvQuantity = findViewById(R.id.tv_quantity);
         btnAddToCart = findViewById(R.id.btn_add_to_cart);
-    }
-
-    private void setupViewModel() {
-        cartViewModel = new ViewModelProvider(this).get(CartViewModel.class);
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
     }
 
     private void setupListeners() {
@@ -98,9 +89,8 @@ public class DishDetailActivity extends AppCompatActivity {
     }
 
     private void addToCart() {
-        User user = userViewModel.getCurrentUser().getValue();
-        if (user != null) {
-            int userId = user.getId();
+        int userId = UserSession.getUserId(this);
+        if (userId != -1) {
             cartViewModel.initCart(userId); // 确保CartViewModel有正确userId
             cartViewModel.addToCart(dish, quantity, new CartViewModel.AddToCartCallback() {
                 @Override
