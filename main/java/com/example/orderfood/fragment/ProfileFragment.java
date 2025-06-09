@@ -43,12 +43,18 @@ public class ProfileFragment extends Fragment {
     private void setupViewModel() {
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
+        // 自动恢复用户
+        if (userViewModel.getCurrentUser().getValue() == null) {
+            userViewModel.restoreUserFromSession(requireContext());
+        }
+
         userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), new Observer<User>() {
             @Override
             public void onChanged(User user) {
                 if (user != null) {
                     updateUserInfo(user);
                 } else {
+                    // 关键：保证未登录时跳转
                     startActivity(new Intent(requireContext(), LoginActivity.class));
                     requireActivity().finish();
                 }
