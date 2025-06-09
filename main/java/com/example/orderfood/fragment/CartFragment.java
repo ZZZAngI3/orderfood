@@ -193,34 +193,34 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemList
             return;
         }
 
-        // 检查库存 - 用Dish表的最新库存
-        new AsyncTask<Void, Void, Boolean>() {
+        // 检查库存
+        new Thread(() -> {
+            boolean hasEnoughStock = true;
             String outOfStockItem = null;
-            @Override
-            protected Boolean doInBackground(Void... voids) {
-                for (CartItem item : selectedItems) {
-                    Dish dish = dishDao.getDishById(item.getDishId());
-                    int stock = (dish != null) ? dish.getStock() : 0;
-                    if (item.getCount() > stock) {
-                        outOfStockItem = item.getDishName();
-                        return false;
-                    }
+            for (CartItem item : selectedItems) {
+                Dish dish = dishDao.getDishById(item.getDishId());
+                // 打印调试
+                android.util.Log.d("CartCheck", "cart dishId=" + item.getDishId() + ", dish=" + dish);
+                int stock = (dish != null) ? dish.getStock() : 0;
+                if (item.getCount() > stock) {
+                    outOfStockItem = item.getDishName();
+                    hasEnoughStock = false;
+                    break;
                 }
-                return true;
             }
-
-            @Override
-            protected void onPostExecute(Boolean hasEnoughStock) {
-                if (!hasEnoughStock) {
-                    Toast.makeText(requireContext(), outOfStockItem + " 库存不足", Toast.LENGTH_SHORT).show();
+            String finalOutOfStockItem = outOfStockItem;
+            boolean finalHasEnoughStock = hasEnoughStock;
+            requireActivity().runOnUiThread(() -> {
+                if (!finalHasEnoughStock) {
+                    Toast.makeText(requireContext(), finalOutOfStockItem + " 库存不足", Toast.LENGTH_SHORT).show();
                 } else {
                     generateOrder(selectedItems);
                     updateStock(selectedItems);
                     cartViewModel.clearCart();
                     Toast.makeText(requireContext(), "结算成功", Toast.LENGTH_SHORT).show();
                 }
-            }
-        }.execute();
+            });
+        }).start();
     }
 
     // 订单生成逻辑
