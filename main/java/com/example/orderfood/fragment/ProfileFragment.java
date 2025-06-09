@@ -40,7 +40,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupViewModel() {
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), new Observer<User>() {
             @Override
