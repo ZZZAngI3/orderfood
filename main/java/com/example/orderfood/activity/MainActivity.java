@@ -13,11 +13,14 @@ import com.example.orderfood.fragment.CategoryFragment;
 import com.example.orderfood.fragment.HomeFragment;
 import com.example.orderfood.fragment.ProfileFragment;
 import com.example.orderfood.viewmodel.UserViewModel;
+import com.example.orderfood.viewmodel.CartViewModel;
+import com.example.orderfood.entity.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private UserViewModel userViewModel;
+    private CartViewModel cartViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        cartViewModel = new ViewModelProvider(this).get(CartViewModel.class);
 
         // 检查用户是否已登录
         userViewModel.getCurrentUser().observe(this, user -> {
@@ -32,6 +36,9 @@ public class MainActivity extends AppCompatActivity {
                 // 用户未登录，跳转到登录页面
                 startActivity(new Intent(MainActivity.this, LoginActivity.class));
                 finish();
+            } else {
+                // 用户已登录，初始化购物车用户ID
+                cartViewModel.initCart(user.getId());
             }
         });
 
@@ -44,6 +51,16 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new HomeFragment())
                     .commit();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 每次回到主界面再同步一次，避免账号切换等情况
+        User user = userViewModel.getCurrentUser().getValue();
+        if (user != null) {
+            cartViewModel.initCart(user.getId());
         }
     }
 
