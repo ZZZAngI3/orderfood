@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import com.example.orderfood.R;
@@ -14,7 +13,6 @@ import com.example.orderfood.fragment.HomeFragment;
 import com.example.orderfood.fragment.ProfileFragment;
 import com.example.orderfood.viewmodel.UserViewModel;
 import com.example.orderfood.viewmodel.CartViewModel;
-import com.example.orderfood.entity.User;
 import com.example.orderfood.util.UserSession;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -31,11 +29,9 @@ public class MainActivity extends AppCompatActivity {
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
         cartViewModel = new ViewModelProvider(this).get(CartViewModel.class);
 
+        // 只做购物车初始化，不跳转
         userViewModel.getCurrentUser().observe(this, user -> {
-            if (user == null) {
-                startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                finish();
-            } else {
+            if (user != null) {
                 UserSession.saveUserId(MainActivity.this, user.getId());
                 cartViewModel.initCart(user.getId());
             }
