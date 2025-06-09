@@ -3,7 +3,6 @@ package com.example.orderfood.activity;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import com.google.android.material.textfield.TextInputEditText;
 import android.widget.Toast;
@@ -20,7 +19,6 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // 使用正确的 ID 查找视图
         etUsername = findViewById(R.id.et_register_username);
         etPassword = findViewById(R.id.et_register_password);
         etConfirmPassword = findViewById(R.id.et_register_confirm_password);
@@ -48,7 +46,6 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // 由于布局中没有地址输入框，这里暂时用空字符串代替地址
         userViewModel.register(username, password, phone, "", new UserViewModel.RegisterCallback() {
             @Override
             public void onSuccess() {
