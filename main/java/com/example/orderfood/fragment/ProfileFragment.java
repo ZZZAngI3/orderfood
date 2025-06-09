@@ -20,7 +20,7 @@ import com.example.orderfood.util.UserSession;
 
 public class ProfileFragment extends Fragment {
     private TextView tvUsername, tvPhone, tvAddress;
-    private Button btnLogout;
+    private Button btnLogout, btnLogin;
     private UserViewModel userViewModel;
 
     @Nullable
@@ -38,6 +38,7 @@ public class ProfileFragment extends Fragment {
         tvPhone = view.findViewById(R.id.tv_phone);
         tvAddress = view.findViewById(R.id.tv_address);
         btnLogout = view.findViewById(R.id.btn_logout);
+        btnLogin = view.findViewById(R.id.btn_login);
     }
 
     private void setupViewModel() {
@@ -52,11 +53,20 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onChanged(User user) {
                 if (user != null) {
+                    // 已登录，显示信息与退出按钮，隐藏登录按钮
                     updateUserInfo(user);
+                    btnLogout.setVisibility(View.VISIBLE);
+                    btnLogin.setVisibility(View.GONE);
+                    tvUsername.setVisibility(View.VISIBLE);
+                    tvPhone.setVisibility(View.VISIBLE);
+                    tvAddress.setVisibility(View.VISIBLE);
                 } else {
-                    // 关键：保证未登录时跳转
-                    startActivity(new Intent(requireContext(), LoginActivity.class));
-                    requireActivity().finish();
+                    // 未登录，隐藏信息与退出按钮，显示登录按钮
+                    tvUsername.setVisibility(View.GONE);
+                    tvPhone.setVisibility(View.GONE);
+                    tvAddress.setVisibility(View.GONE);
+                    btnLogout.setVisibility(View.GONE);
+                    btnLogin.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -68,8 +78,15 @@ public class ProfileFragment extends Fragment {
             public void onClick(View v) {
                 userViewModel.logout();
                 UserSession.clear(requireContext());
+                // 触发 observer，自动切换为未登录UI
+            }
+        });
+
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 跳转到登录页面
                 startActivity(new Intent(requireContext(), LoginActivity.class));
-                requireActivity().finish();
             }
         });
     }
